@@ -6,6 +6,12 @@ backend/target/
 frontend/node_modules/
 frontend/dist/
 
+# Local environment
+.env
+.env.*
+!.env.example
+*.log
+
 # IDE
 .idea/
 .vscode/

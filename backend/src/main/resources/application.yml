@@ -1,7 +1,9 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
+  application:
+    name: ai-fullstack-interview
   datasource:
     url: jdbc:h2:mem:interview;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
@@ -18,3 +20,8 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: INFO
+    com.lcysgsg.interview: INFO

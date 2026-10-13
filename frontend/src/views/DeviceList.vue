@@ -1,42 +1,103 @@
 <template>
-  <main class="page">
-    <header class="page-header">
-      <div>
-        <h1>设备管理</h1>
-        <p>AI 全栈开发实操测试基础项目</p>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div>
+          <strong>Engineering Interview Lab</strong>
+          <span>Full-stack sandbox</span>
+        </div>
       </div>
-      <el-button type="primary" @click="openCreate">新增设备</el-button>
+
+      <div class="service-status" :class="`is-${apiState}`">
+        <span class="status-dot" />
+        {{ apiStateText }}
+      </div>
     </header>
 
-    <el-card shadow="never">
-      <el-table v-loading="loading" :data="devices" stripe>
-        <el-table-column prop="code" label="设备编号" min-width="160" />
-        <el-table-column prop="name" label="设备名称" min-width="240" />
-        <el-table-column label="状态" width="120">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'NORMAL' ? 'success' : 'info'">
-              {{ statusText(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" min-width="190">
-          <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
-        </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <main class="workspace">
+      <section class="hero-panel">
+        <div>
+          <div class="eyebrow">INDUSTRIAL SOFTWARE · INTERVIEW SANDBOX</div>
+          <h1>设备资产台账</h1>
+          <p>一个刻意缩小的工业软件场景：代码不多，但保留真实的前后端调用、业务规则与数据持久化。</p>
+        </div>
+        <el-button type="primary" size="large" @click="openCreate">新增设备</el-button>
+      </section>
 
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑设备' : '新增设备'" width="460px">
-      <el-form label-width="90px" @submit.prevent>
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <span>设备总数</span>
+          <strong>{{ devices.length }}</strong>
+          <small>当前台账记录</small>
+        </div>
+        <div class="metric-card">
+          <span>正常设备</span>
+          <strong>{{ normalCount }}</strong>
+          <small>状态为 NORMAL</small>
+        </div>
+        <div class="metric-card metric-card--meta">
+          <span>运行环境</span>
+          <strong>H2</strong>
+          <small>应用重启后恢复种子数据</small>
+        </div>
+      </section>
+
+      <el-card class="table-card" shadow="never">
+        <template #header>
+          <div class="card-header">
+            <div>
+              <strong>设备列表</strong>
+              <span>基础项目已实现查询、新增和编辑</span>
+            </div>
+            <el-button :loading="loading" @click="loadDevices">刷新</el-button>
+          </div>
+        </template>
+
+        <el-table
+          v-loading="loading"
+          :data="devices"
+          empty-text="暂无设备数据"
+          stripe
+        >
+          <el-table-column prop="code" label="设备编号" min-width="160" />
+          <el-table-column prop="name" label="设备名称" min-width="260" />
+          <el-table-column label="状态" width="130">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'NORMAL' ? 'success' : 'info'" effect="light">
+                {{ statusText(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="190">
+            <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="140" fixed="right">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <footer class="page-footer">
+        <span>Java 17 · Spring Boot 4 · MyBatis-Plus</span>
+        <span>Vue 3 · TypeScript · Vite 8</span>
+      </footer>
+    </main>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="editingId ? '编辑设备' : '新增设备'"
+      width="460px"
+      destroy-on-close
+    >
+      <el-form label-position="top" @submit.prevent>
         <el-form-item label="设备编号" required>
-          <el-input v-model="form.code" maxlength="50" />
+          <el-input v-model="form.code" maxlength="50" placeholder="例如 DEV-004" />
         </el-form-item>
         <el-form-item label="设备名称" required>
-          <el-input v-model="form.name" maxlength="100" />
+          <el-input v-model="form.name" maxlength="100" placeholder="请输入设备名称" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -44,13 +105,15 @@
         <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDevice, getDevices, updateDevice } from '../api/device'
+import { getApiErrorMessage } from '../api/http'
+import { getHealth } from '../api/system'
 import type { Device, DeviceForm } from '../types/device'
 
 const devices = ref<Device[]>([])
@@ -58,14 +121,32 @@ const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
 const editingId = ref<number | null>(null)
+const apiState = ref<'checking' | 'online' | 'offline'>('checking')
 const form = reactive<DeviceForm>({ code: '', name: '' })
+
+const normalCount = computed(() => devices.value.filter((item) => item.status === 'NORMAL').length)
+const apiStateText = computed(() => {
+  if (apiState.value === 'online') return 'API 已连接'
+  if (apiState.value === 'offline') return 'API 未连接'
+  return '正在检查 API'
+})
+
+async function checkApi() {
+  apiState.value = 'checking'
+  try {
+    const health = await getHealth()
+    apiState.value = health.status === 'UP' ? 'online' : 'offline'
+  } catch {
+    apiState.value = 'offline'
+  }
+}
 
 async function loadDevices() {
   loading.value = true
   try {
     devices.value = await getDevices()
   } catch (error) {
-    ElMessage.error(getErrorMessage(error))
+    ElMessage.error(getApiErrorMessage(error, '设备列表加载失败'))
   } finally {
     loading.value = false
   }
@@ -93,60 +174,37 @@ async function save() {
 
   saving.value = true
   try {
-    const payload: DeviceForm = { code: form.code.trim(), name: form.name.trim() }
-    if (editingId.value) {
+    const payload: DeviceForm = {
+      code: form.code.trim(),
+      name: form.name.trim(),
+    }
+
+    if (editingId.value !== null) {
       await updateDevice(editingId.value, payload)
-      ElMessage.success('编辑成功')
+      ElMessage.success('设备已更新')
     } else {
       await createDevice(payload)
-      ElMessage.success('新增成功')
+      ElMessage.success('设备已创建')
     }
+
     dialogVisible.value = false
     await loadDevices()
   } catch (error) {
-    ElMessage.error(getErrorMessage(error))
+    ElMessage.error(getApiErrorMessage(error))
   } finally {
     saving.value = false
   }
 }
 
 function statusText(status: string) {
-  if (status === 'NORMAL') return '正常'
-  return status
+  return status === 'NORMAL' ? '正常' : status
 }
 
 function formatTime(value: string) {
   return value ? value.replace('T', ' ').slice(0, 19) : '-'
 }
 
-function getErrorMessage(error: unknown) {
-  const responseMessage = (error as any)?.response?.data?.message
-  return responseMessage || '操作失败，请检查服务是否正常运行'
-}
-
-onMounted(loadDevices)
+onMounted(async () => {
+  await Promise.all([checkApi(), loadDevices()])
+})
 </script>
-
-<style scoped>
-.page {
-  width: min(1180px, calc(100% - 48px));
-  margin: 36px auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
-}
-
-p {
-  margin: 0;
-  color: #909399;
-}
-</style>

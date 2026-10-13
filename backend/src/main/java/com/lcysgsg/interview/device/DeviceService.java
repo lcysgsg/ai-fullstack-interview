@@ -2,6 +2,7 @@ package com.lcysgsg.interview.device;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,30 +17,37 @@ public class DeviceService {
         this.deviceMapper = deviceMapper;
     }
 
+    @Transactional(readOnly = true)
     public List<Device> list() {
         return deviceMapper.selectList(
                 new LambdaQueryWrapper<Device>().orderByDesc(Device::getId)
         );
     }
 
+    @Transactional
     public Device create(DeviceRequest request) {
-        ensureCodeAvailable(request.code(), null);
+        String code = request.code().trim();
+        String name = request.name().trim();
+        ensureCodeAvailable(code, null);
 
         Device device = new Device();
-        device.setCode(request.code().trim());
-        device.setName(request.name().trim());
+        device.setCode(code);
+        device.setName(name);
         device.setStatus(STATUS_NORMAL);
         device.setCreatedAt(LocalDateTime.now());
         deviceMapper.insert(device);
         return device;
     }
 
+    @Transactional
     public Device update(Long id, DeviceRequest request) {
         Device device = requireDevice(id);
-        ensureCodeAvailable(request.code(), id);
+        String code = request.code().trim();
+        String name = request.name().trim();
+        ensureCodeAvailable(code, id);
 
-        device.setCode(request.code().trim());
-        device.setName(request.name().trim());
+        device.setCode(code);
+        device.setName(name);
         deviceMapper.updateById(device);
         return device;
     }
@@ -54,7 +62,7 @@ public class DeviceService {
 
     private void ensureCodeAvailable(String code, Long excludeId) {
         LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<Device>()
-                .eq(Device::getCode, code.trim());
+                .eq(Device::getCode, code);
         if (excludeId != null) {
             wrapper.ne(Device::getId, excludeId);
         }
