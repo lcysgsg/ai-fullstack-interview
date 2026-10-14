@@ -2,10 +2,10 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">AI</div>
+        <div class="brand-mark">EA</div>
         <div>
-          <strong>Engineering Interview Lab</strong>
-          <span>Full-stack sandbox</span>
+          <strong>Equipment Assets</strong>
+          <span>Asset Registry</span>
         </div>
       </div>
 
@@ -18,9 +18,9 @@
     <main class="workspace">
       <section class="hero-panel">
         <div>
-          <div class="eyebrow">INDUSTRIAL SOFTWARE · INTERVIEW SANDBOX</div>
+          <div class="eyebrow">ASSET OPERATIONS</div>
           <h1>设备资产台账</h1>
-          <p>一个刻意缩小的工业软件场景：代码不多，但保留真实的前后端调用、业务规则与数据持久化。</p>
+          <p>设备基础信息与状态管理。</p>
         </div>
         <el-button type="primary" size="large" @click="openCreate">新增设备</el-button>
       </section>
@@ -29,7 +29,7 @@
         <div class="metric-card">
           <span>设备总数</span>
           <strong>{{ devices.length }}</strong>
-          <small>当前台账记录</small>
+          <small>台账记录</small>
         </div>
         <div class="metric-card">
           <span>正常设备</span>
@@ -37,9 +37,9 @@
           <small>状态为 NORMAL</small>
         </div>
         <div class="metric-card metric-card--meta">
-          <span>运行环境</span>
+          <span>数据存储</span>
           <strong>H2</strong>
-          <small>应用重启后恢复种子数据</small>
+          <small>本地开发环境</small>
         </div>
       </section>
 
@@ -48,7 +48,7 @@
           <div class="card-header">
             <div>
               <strong>设备列表</strong>
-              <span>基础项目已实现查询、新增和编辑</span>
+              <span>设备基础信息与状态</span>
             </div>
             <el-button :loading="loading" @click="loadDevices">刷新</el-button>
           </div>
