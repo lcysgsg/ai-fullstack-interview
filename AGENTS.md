@@ -20,6 +20,8 @@ This repository is a small full-stack engineering interview sandbox. Read `CANDI
 - Business constraints that matter for data correctness should be enforced by the backend, not only by UI state.
 - Preserve readable names and simple code over unnecessary abstractions.
 - Never assume generated code is correct without compiling, running, or otherwise validating it.
+- Treat `README.md`, `CANDIDATE.md`, `AGENTS.md`, and files under `docs/` as task/reference material. Do not modify them as part of feature implementation unless the user or interviewer explicitly asks for documentation changes.
+- Do not weaken or delete existing baseline tests merely to make a change pass.
 
 ## Useful files
 
