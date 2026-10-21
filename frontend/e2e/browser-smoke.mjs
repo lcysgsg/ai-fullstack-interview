@@ -13,6 +13,8 @@ assert.ok(backendReady,'Backend did not become healthy before browser test')
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']})
 try {
  const page=await browser.newPage({viewport:{width:1440,height:900}})
+ const pageErrors=[]
+ page.on('pageerror',error=>pageErrors.push(error.message))
  await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'})
  await page.getByText('API 已连接').waitFor({timeout:20000})
  await page.getByText('设备资产台账',{exact:true}).waitFor()
@@ -28,6 +30,8 @@ try {
  await edits.nth(1).fill('浏览器验收设备已更新')
  await page.locator('.el-dialog:visible').getByRole('button',{name:'保存'}).click()
  await page.getByText('浏览器验收设备已更新',{exact:true}).waitFor()
+ await page.locator('.el-dialog:visible').waitFor({state:'hidden',timeout:10000})
+ assert.deepEqual(pageErrors,[], 'Unexpected frontend JavaScript exceptions')
  await mkdir('artifacts',{recursive:true})
  await page.screenshot({path:'artifacts/basic-browser.png',fullPage:true})
  console.log('PASS browser: loaded device list, created and edited device with live API')
