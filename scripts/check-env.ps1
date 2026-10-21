@@ -1,7 +1,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 Write-Host ""
-Write-Host "AI Fullstack Interview · Environment Check"
+Write-Host "Full-Stack Exercise · Environment Check"
 Write-Host "----------------------------------------"
 
 $missing = $false

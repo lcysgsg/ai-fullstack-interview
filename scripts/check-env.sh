@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-printf '\nAI Fullstack Interview · Environment Check\n'
+printf '\nFull-Stack Exercise · Environment Check\n'
 printf '%s\n' '----------------------------------------'
 
 missing=0

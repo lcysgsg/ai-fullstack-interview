@@ -26,9 +26,15 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
-      - name: Run backend tests
+      - name: Build and test backend
         working-directory: backend
-        run: mvn -B test
+        run: mvn -B package
+      - name: Verify running API
+        shell: bash
+        run: |
+          java -jar backend/target/ai-fullstack-interview-backend-0.0.1-SNAPSHOT.jar > /tmp/fullstack-api.log 2>&1 &
+          trap 'cat /tmp/fullstack-api.log' ERR
+          node scripts/baseline-http-smoke.mjs
 
   frontend:
     name: Frontend typecheck & build
@@ -46,3 +52,13 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+      - name: Verify frontend HTTP startup
+        shell: bash
+        run: |
+          cd frontend
+          npm run dev -- --host 127.0.0.1 > /tmp/fullstack-vite.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5173/ > /tmp/fullstack-index.html; then break; fi
+            sleep 1
+          done
+          grep -q '<div id="app">' /tmp/fullstack-index.html
