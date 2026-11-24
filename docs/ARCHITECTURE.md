@@ -83,3 +83,5 @@ cd frontend && npm run build
 ```
 
 GitHub Actions runs both checks on the baseline branch.
+
+公开 HTTP 检查：从根目录运行 `node scripts/baseline-http-smoke.mjs` 检查既有功能，`node scripts/check-task.mjs` 检查停用任务（需启动本地后端）。停用接口的推荐契约与适配方式见 README。
