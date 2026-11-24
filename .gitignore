@@ -20,3 +20,8 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local runtime database / browser artifacts
+*.mv.db
+*.trace.db
+frontend/artifacts/
